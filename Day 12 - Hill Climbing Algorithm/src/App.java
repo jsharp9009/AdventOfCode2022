@@ -30,8 +30,8 @@ public class App {
         var pred = new HashMap<Point, Point>();
         var dist = new HashMap<Point, Integer>();
 
-        TwoArgInterface<Integer> validTest = (newHeight, currentHeight) ->{
-            return (newHeight - currentHeight) <= 1;
+        TwoArgInterface<Point> validTest = (newPoint, currentPoint) ->{
+            return (map[newPoint.y][newPoint.x] - map[currentPoint.y][currentPoint.x]) <= 1;
         };
 
         TwoArgInterface<Point> endTest = (newPoint, endPoint) ->{
@@ -47,8 +47,8 @@ public class App {
         var pred = new HashMap<Point, Point>();
         var dist = new HashMap<Point, Integer>();
 
-        TwoArgInterface<Integer> validTest = (newHeight, currentHeight) ->{
-            return (newHeight - currentHeight) >= -1;
+        TwoArgInterface<Point> validTest = (newPoint, currentPoint) ->{
+            return (map[newPoint.y][newPoint.x] - map[currentPoint.y][currentPoint.x]) >= -1;
         };
 
         TwoArgInterface<Point> endTest = (newPoint, endPoint) ->{
@@ -79,7 +79,7 @@ public class App {
         return result;
     }
 
-    static Integer BFS(int[][] map, Point start, HashMap<Point, Point> pred, HashMap<Point, Integer> Dist, TwoArgInterface validTest, TwoArgInterface endTest){
+    static Integer BFS(int[][] map, Point start, HashMap<Point, Point> pred, HashMap<Point, Integer> Dist, TwoArgInterface<Point> validTest, TwoArgInterface<Point> endTest){
         ArrayList<Point> visited = new ArrayList<Point>();
         var queue = new LinkedList<Point>();
         queue.add(start);
@@ -88,9 +88,7 @@ public class App {
 
         while(queue.size() > 0){
 
-            var point = queue.poll();
-            var currentHeight = map[point.y][point.x];
-            
+            var point = queue.poll();            
             for (Point move : movements){
                 var newX = (int) (point.getX() + move.getX());
                 var newY = (int) (point.getY() + move.getY());
@@ -98,11 +96,10 @@ public class App {
                 if (newX < 0 || newX >= map[0].length
                         || newY < 0 || newY >= map.length) continue;
 
-                var newHeight =  map[newY][newX];
+                var newPoint = new Point(newX, newY);
                 if(!visited.stream().anyMatch(p -> p.getX() == newX && p.getY() == newY)
-                    && validTest.operation(newHeight, currentHeight)){
+                    && validTest.operation(newPoint, point)){
                     
-                    var newPoint = new Point(newX, newY);
                     visited.add(newPoint);  
                     Dist.put(newPoint, Dist.get(point) + 1);               
                     queue.add(newPoint);
