@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.awt.Point;
 
@@ -15,8 +16,9 @@ public class App {
         var file = new File("input.txt");
         var input = Files.readAllLines(Paths.get(file.getAbsolutePath()));
         var rocks = ParseInput(input);
-        Print(rocks);
+        //Print(rocks);
         SolvePartOne(rocks);
+        //Print(rocks);
         SolvePartTwo(rocks);
     }
 
@@ -44,8 +46,8 @@ public class App {
     }
 
     static void Print(HashMap<Integer,ArrayList<Integer>> rocks){
-        var minX = Collections.min(flatten(rocks.values()).toList());
-        var maxX = Collections.max(flatten(rocks.values()).toList());
+        var minX = Collections.min(flatten(rocks.values()).collect(Collectors.toList()));
+        var maxX = Collections.max(flatten(rocks.values()).collect(Collectors.toList()));
         var maxY = Collections.max(rocks.keySet());
         for(int y = 0; y <= maxY; y++){
             for(int x = minX; x <= maxX; x++){
@@ -96,7 +98,7 @@ public class App {
     }
 
     static void SolvePartOne(HashMap<Integer,ArrayList<Integer>> rocks){
-        var myRocks = new HashMap<>(rocks);
+        var myRocks = DeepCopy(rocks);
         var unitCount = 0;
         var largestY = Collections.max(myRocks.keySet());
         
@@ -134,12 +136,12 @@ public class App {
             if(breakout)
                 break;
         }
-        Print(myRocks);
+        //Print(myRocks);
         System.out.println("Part One Unit Count: " + (unitCount - 1));
     }
 
     static void SolvePartTwo(HashMap<Integer,ArrayList<Integer>> rocks){
-        var myRocks = new HashMap<>(rocks);
+        var myRocks = DeepCopy(rocks);
         var unitCount = 0;
         var largestY = Collections.max(myRocks.keySet()) + 2;
         
@@ -148,7 +150,7 @@ public class App {
             var sand = new Point(500, 0);
 
             while(true){
-                if(sand.y == largestY){
+                if(sand.y == largestY - 1){
                     break;
                 }
                 if(!myRocks.containsKey(sand.y + 1) || !myRocks.get(sand.y + 1).contains(sand.x)){
@@ -174,8 +176,8 @@ public class App {
             if(sand.x == 500 && sand.y == 0)
                 break;
         }
-        Print(myRocks);
-        System.out.println("Part Two Unit Count: " + (unitCount - 1));
+        //Print(myRocks);
+        System.out.println("Part Two Unit Count: " + (unitCount));
     }
 
     public static<T> Stream<T> flatten(Collection<ArrayList<T>> values)
@@ -184,5 +186,13 @@ public class App {
                                 .flatMap(x -> x.stream());
  
         return stream;
+    }
+
+    static HashMap<Integer, ArrayList<Integer>> DeepCopy(HashMap<Integer, ArrayList<Integer>> input){
+        var result = new HashMap<Integer, ArrayList<Integer>>();
+        for(var pair : input.entrySet()){
+            result.put(pair.getKey(), new ArrayList<>(pair.getValue()));
+        }
+        return result;
     }
  }
