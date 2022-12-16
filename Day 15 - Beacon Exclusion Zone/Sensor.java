@@ -1,20 +1,14 @@
 import java.awt.Point;
 
 public class Sensor extends Point {
-    Point beacon;
-    Integer distance;
-    public Sensor(int x, int y, Integer beaconX, Integer beaconY) {
+    Integer range;
+    public Sensor(int x, int y, Integer range) {
         super(x, y);
-        this.beacon = new Point(beaconX, beaconY);
-        this.distance = CalculateDistance(beacon.x, beacon.y, this.x, this.y);
+        this.range = range;
     }
 
-    public Point getBeacon() {
-        return beacon;
-    }
-
-    public Integer GetDistance(){
-        return distance;
+    public Integer GetRange(){
+        return range;
     }
 
     public static Integer CalculateDistance(Integer p1x, Integer p1y, Integer p2x, Integer p2y){
@@ -23,11 +17,11 @@ public class Sensor extends Point {
 
     public boolean CanSee(Point point){
         var dist = CalculateDistance(this.x, this.y, point.x, point.y);
-        return dist <= distance;
+        return dist <= range;
     }
 
     public boolean CanSee(Integer p1x, Integer p1y){
         var dist = CalculateDistance(p1x, p1y, this.x, this.y);
-        return dist < distance;
+        return dist < range;
     }
 }

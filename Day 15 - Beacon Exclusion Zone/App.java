@@ -13,12 +13,15 @@ public class App {
     public static void main(String[] args) throws Exception {
         var file = new File("input.txt");
         var input = Files.readAllLines(Paths.get(file.getAbsolutePath()));
-        var senors = ParseInput(input);
-        SolvePartOne(senors, 2000000);
+        var parts = ParseInput(input);
+        var sensors = (ArrayList<Sensor>)parts[0];
+        var beacons = (ArrayList<Point>)parts[1];
+        SolvePartOne(sensors, beacons, 2000000);
     }
 
-    static ArrayList<Sensor> ParseInput(List<String> input) {
-        var result = new ArrayList<Sensor>();
+    static Object[] ParseInput(List<String> input) {
+        var senors = new ArrayList<Sensor>();
+        var beacons = new ArrayList<Point>();
         for (String line : input) {
             var matcher = pattern.matcher(line);
             Integer sX = 0;
@@ -34,49 +37,27 @@ public class App {
                     case 3: bY = Integer.parseInt(matcher.group()); count++; break;
                 }
             }
-            result.add(new Sensor(sX, sY, bX, bY));
+            senors.add(new Sensor(sX, sY, Sensor.CalculateDistance(sX, sY, bX, bY)));
+            var checkX = bX;
+            var checky= bY;
+            if(!beacons.stream().anyMatch(p -> p.getX() == checkX && p.getY() == checky))
+                beacons.add(new Point(bX, bY));
         }
-        return result;
+        return new Object[]{senors, beacons};
     }
 
-    static void SolvePartOne(ArrayList<Sensor> sensors, Integer line){
-        var canTouch = (Sensor[])sensors.stream().filter(p -> p.CanSee(p.x, line)).toArray(Sensor[]::new);
-        var beacons = sensors.stream().filter(p -> p.beacon.y == line).distinct().collect(Collectors.toList());
-        ArrayList<Point> checked = new ArrayList<Point>();
-        for (Sensor sensor : canTouch) {
-            if(!checked.stream().anyMatch(p -> p.x == sensor.x && p.y == line)
-            && !beacons.stream().anyMatch(p -> p.beacon.x == sensor.x && p.beacon.y == line))
-                checked.add(new Point(sensor.x, line));
-            
-            var x = sensor.x + 1;
-            while(true){
-                var checkX = x;
-                if(sensor.CanSee(new Point(x, line)) 
-                && !checked.stream().anyMatch(p -> p.x == checkX && p.y == line)
-                && !beacons.stream().anyMatch(p -> p.beacon.x == checkX && p.beacon.y == line)){
-                    checked.add(new Point(x, line));
-                    x++;
-                }
-                else{
-                    break;
-                }
-            }
+    static void SolvePartOne(ArrayList<Sensor> sensors, ArrayList<Point> beacons, Integer line){
+        var canTouch = (Sensor[])sensors.stream().filter(p -> p.CanSee(p.x, line)).toArray(Sensor[]::new);        
+        var maxX = 0;
+        var minX = Integer.MAX_VALUE;
 
-            x = sensor.x - 1;
-            while(true){
-                var checkX = x;
-                if(sensor.CanSee(new Point(x, line)) 
-                && !checked.stream().anyMatch(p -> p.x == checkX && p.y == line)
-                && !beacons.stream().anyMatch(p -> p.beacon.x == checkX && p.beacon.y == line)){
-                    checked.add(new Point(x, line));
-                    x--;
-                }
-                else{
-                    break;
-                }
-            }
+        for (Sensor sensor : canTouch) {
+            var xRange = sensor.range - (Math.abs(sensor.y - line));            
+            minX = Math.min(sensor.x - xRange, minX);
+            maxX = Math.max(sensor.x + xRange, maxX);
         }
-        //checked.stream().forEach(s -> System.out.println(s));
-        System.out.println("Part One - space scanned: " + checked.stream().distinct().count());
+        int notBeacons = (maxX + 1) - minX;
+        notBeacons -= beacons.stream().filter(p -> p.getY() == line).distinct().count();
+        System.out.println("Part One - space scanned: " + notBeacons);
     }
 }
