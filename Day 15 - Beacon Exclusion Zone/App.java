@@ -5,10 +5,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class App {
-    static Pattern pattern = Pattern.compile("\\d+");
+    static Pattern pattern = Pattern.compile("-?\\d+");
 
     public static void main(String[] args) throws Exception {
         var file = new File("input.txt");
@@ -17,6 +16,7 @@ public class App {
         var sensors = (ArrayList<Sensor>)parts[0];
         var beacons = (ArrayList<Point>)parts[1];
         SolvePartOne(sensors, beacons, 2000000);
+        SolvePartTwo(sensors, 4000000);
     }
 
     static Object[] ParseInput(List<String> input) {
@@ -59,5 +59,51 @@ public class App {
         int notBeacons = (maxX + 1) - minX;
         notBeacons -= beacons.stream().filter(p -> p.getY() == line).distinct().count();
         System.out.println("Part One - space scanned: " + notBeacons);
+    }
+
+    static void SolvePartTwo(ArrayList<Sensor> sensors, Integer maxLine){
+        Point p = null;
+        for(int i = 0; i < maxLine; i++){
+            p = ScanLine(sensors, i, maxLine);
+            if(p != null)
+                break;
+        }
+        var frequency = (long)((p.getX() * 4000000) + p.getY());
+        System.out.println(p);
+        System.out.println("Emergency tunning frequency: " + frequency);
+    }
+
+    static Point ScanLine(ArrayList<Sensor> sensors, Integer line, Integer MaxX){
+        var canTouch = (Sensor[])sensors.stream().filter(p -> p.CanSee(p.x, line)).sorted((p1, p2) -> Double.compare(p1.getX(), p2.getX())).toArray(Sensor[]::new);        
+        ArrayList<Range> ranges = new ArrayList<Range>();
+        for (Sensor sensor : canTouch) {
+            var xRange = sensor.range - (Math.abs(sensor.y - line));
+
+            var minX = sensor.x - xRange;
+            var maxX = sensor.x + xRange;
+
+            if(minX < 0)
+                minX = 0;
+
+            if(maxX > MaxX)
+                maxX = MaxX;
+            
+            var newRange = new Range(minX, maxX);
+            var newRanges = new ArrayList<Range>();
+            for (Range range : ranges) {
+                if(!newRange.Merge(range))
+                    newRanges.add(range);
+            }
+            newRanges.add(newRange);
+            ranges = newRanges;
+        }
+        if(ranges.size() > 1) {
+            var x = ((ranges.get(1).low - ranges.get(0).high) - 1) + ranges.get(0).high;
+                var testPoint = new Point(x, line);
+                if(sensors.stream().allMatch(s -> !s.CanSee(testPoint.x, testPoint.y)))
+                    return testPoint;
+        }
+
+        return null;
     }
 }
