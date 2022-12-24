@@ -31,7 +31,7 @@ public class State {
             return false;
         var compareTo = (State)obj;
         return Minute == compareTo.Minute
-            && ValveState == compareTo.ValveState
-            && CurrentValve == compareTo.CurrentValve;
+            //&& ValveState == compareTo.ValveState
+            && CurrentValve.valveName.equals(compareTo.CurrentValve.valveName);
     }
 }
